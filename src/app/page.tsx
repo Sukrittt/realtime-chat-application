@@ -1,3 +1,9 @@
-export default function Home() {
-  return <div className="text-center text-red-900">Hello World</div>;
+import Button from "@/ui/Button";
+
+export default async function Home() {
+  return (
+    <div className="m-4">
+      <Button>Hello</Button>
+    </div>
+  );
 }
