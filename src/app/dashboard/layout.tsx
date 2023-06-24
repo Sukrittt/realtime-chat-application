@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { getAuthSession } from "@/lib/auth";
 import Signout from "@/components/Signout";
 import { Icon, Icons } from "@/components/Icons";
+import FriendRequestsOptions from "@/components/Friends/FriendRequestsOptions";
+import { fetchRedis } from "@/helpers/redis";
 
 interface layoutProps {
   children: React.ReactNode;
@@ -32,6 +34,13 @@ const layout = async ({ children }: layoutProps) => {
   if (!session) {
     return notFound();
   }
+
+  const unseenRequestCount = (
+    (await fetchRedis(
+      "smembers",
+      `user-${session.user.id}:incoming_friend_requests`
+    )) as User[]
+  ).length;
 
   return (
     <div className="w-full flex h-screen">
@@ -70,11 +79,18 @@ const layout = async ({ children }: layoutProps) => {
                     </li>
                   );
                 })}
+                <li>
+                  <FriendRequestsOptions
+                    initialUnseenRequestCount={unseenRequestCount}
+                    sessionId={session.user.id}
+                  />
+                </li>
               </ul>
             </li>
-            <li className="-mx-6 mt-auto flex items-center overflow-x-hidden">
-              <div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">
-                <div className="relative h-8 w-8 bg-gray-50">
+
+            <li className="-mx-6 mt-auto flex items-center">
+              <div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 w-2/3">
+                <div className="relative h-8 w-8 bg-gray-50 shrink-0">
                   <Image
                     src={session.user.image || ""}
                     fill
@@ -84,9 +100,12 @@ const layout = async ({ children }: layoutProps) => {
                   />
                 </div>
                 <span className="sr-only">Your profile</span>
-                <div className="flex flex-col">
+                <div className="flex flex-col w-[80%]">
                   <span aria-hidden="true">{session.user.name}</span>
-                  <span className="text-xs text-zinc-400" aria-hidden="true">
+                  <span
+                    className="text-xs text-zinc-400 truncate"
+                    aria-hidden="true"
+                  >
                     {session.user.email}
                   </span>
                 </div>
