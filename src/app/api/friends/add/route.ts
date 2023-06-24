@@ -1,14 +1,15 @@
-import { fetchRedis } from "@/helpers/redis";
-import { getAuthSession } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { emailValidator } from "@/lib/validators/add-friend";
 import { ZodError } from "zod";
+
+import { db } from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
+import { fetchRedis } from "@/helpers/redis";
+import { emailValidator } from "@/lib/validators/add-friend";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { email } = emailValidator.parse(body);
+    const { email } = emailValidator.parse(body.email);
 
     const idToAdd = (await fetchRedis("get", `user:email:${email}`)) as string;
 
