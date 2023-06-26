@@ -105,7 +105,7 @@ const layout = async ({ children }: layoutProps) => {
               <div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 w-2/3">
                 <div className="relative h-8 w-8 bg-gray-50 shrink-0">
                   <Image
-                    src={session.user.image || ""}
+                    src={session.user.image || "/images/placeholder-user-3.png"}
                     fill
                     referrerPolicy="no-referrer"
                     className="rounded-full"
