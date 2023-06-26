@@ -11,7 +11,7 @@ interface MessagesProps {
 
 const Messages: FC<MessagesProps> = ({ initialMessages, sessionId }) => {
   const scrolldownRef = useRef<HTMLDivElement | null>(null);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<MessageType[]>(initialMessages);
 
   return (
     <div
@@ -34,7 +34,7 @@ const Messages: FC<MessagesProps> = ({ initialMessages, sessionId }) => {
             >
               <div
                 className={cn(
-                  "flex flex-col space-y-2 text-base max-w-xs mx-auto",
+                  "flex flex-col space-y-2 text-base max-w-xs mx-2",
                   {
                     "order-1 items-end": isCurrentUser,
                     "order-2 items-start": !isCurrentUser,

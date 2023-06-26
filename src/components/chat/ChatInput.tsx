@@ -33,6 +33,13 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
         if (errorStatus === 401) {
           return loginToast();
         }
+        if (errorStatus === 403) {
+          return toast({
+            title: "Error",
+            description: "You are not allowed to send messages to this chat.",
+            variant: "destructive",
+          });
+        }
       }
       toast({
         title: "Error",
