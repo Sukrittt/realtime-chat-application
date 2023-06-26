@@ -86,6 +86,7 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
             <Button
               onClick={() => sendMessage()}
               isLoading={isLoading}
+              disabled={input.length === 0}
               type="submit"
             >
               Send
