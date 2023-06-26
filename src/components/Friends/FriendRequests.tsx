@@ -1,5 +1,5 @@
 "use client";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { Check, X } from "lucide-react";
@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { IdRequestType } from "@/lib/validators/add-friend";
 import { useAuthToast } from "@/hooks/useAuthToast";
 import { toast } from "@/hooks/use-toast";
+import { pusherClient } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 
 interface FriendRequestsProps {
   incomingFriendRequests: IncomingFriendRequest[];
@@ -24,6 +26,29 @@ const FriendRequests: FC<FriendRequestsProps> = ({
   );
   const router = useRouter();
   const { loginToast } = useAuthToast();
+
+  //pusher
+  useEffect(() => {
+    pusherClient.subscribe(
+      toPusherKey(`user-${sessionId}:incoming_friend_requests`)
+    );
+
+    const friendRequestHandler = ({
+      senderId,
+      senderEmail,
+    }: IncomingFriendRequest) => {
+      setFriendRequests((prev) => [...prev, { senderId, senderEmail }]);
+    };
+
+    pusherClient.bind("incoming_friend_requests", friendRequestHandler); //listen to this event
+
+    return () => {
+      pusherClient.unsubscribe(
+        toPusherKey(`user-${sessionId}:incoming_friend_requests`)
+      );
+      pusherClient.unbind("incoming_friend_requests", friendRequestHandler);
+    };
+  }, []);
 
   const { mutate: acceptFriend } = useMutation({
     mutationFn: async ({ senderId }: IdRequestType) => {
@@ -51,12 +76,18 @@ const FriendRequests: FC<FriendRequestsProps> = ({
         variant: "destructive",
       });
     },
-    onSuccess: ({ senderId }: IdRequestType) => {
+    onSuccess: () => {
+      toast({
+        title: "Friend request accepted",
+        description: "You are now friends with this user.",
+      });
+
+      router.refresh();
+    },
+    onMutate: ({ senderId }: IdRequestType) => {
       setFriendRequests((prev) =>
         prev.filter((request) => request.senderId !== senderId)
       );
-
-      router.refresh();
     },
   });
 
@@ -68,12 +99,13 @@ const FriendRequests: FC<FriendRequestsProps> = ({
       return data;
     },
     onError: () => {},
-    onSuccess: ({ senderId }: IdRequestType) => {
+    onSuccess: () => {
+      router.refresh();
+    },
+    onMutate: ({ senderId }: IdRequestType) => {
       setFriendRequests((prev) =>
         prev.filter((request) => request.senderId !== senderId)
       );
-
-      router.refresh();
     },
   });
 

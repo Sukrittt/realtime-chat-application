@@ -15,6 +15,7 @@ const AddFriend = () => {
     register,
     handleSubmit,
     setError,
+    reset,
     formState: { errors },
   } = useForm<EmailRequestType>({
     resolver: zodResolver(emailValidator),
@@ -49,6 +50,7 @@ const AddFriend = () => {
         title: "Success",
         description: "Friend request sent!",
       });
+      reset();
     },
   });
 
