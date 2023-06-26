@@ -11,3 +11,10 @@ export const MessageValidator = z.object({
 export const MessageArrayValidator = z.array(MessageValidator);
 
 export type MessageType = z.infer<typeof MessageValidator>;
+
+export const SendMessageValidator = z.object({
+  text: z.string(),
+  chatId: z.string(),
+});
+
+export type SendMessageType = z.infer<typeof SendMessageValidator>;
