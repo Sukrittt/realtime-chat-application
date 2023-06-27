@@ -59,7 +59,12 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
         <TextareaAutosize
           ref={textAreaRef}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              input.length !== 0 &&
+              !isLoading
+            ) {
               e.preventDefault();
               sendMessage();
             }
@@ -68,7 +73,7 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={`Message ${chatPartner.name}`}
-          className="block w-full resize-none border-0 bg-transparent text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:py-1.5 sm:text-sm sm:leading-6"
+          className="block w-full resize-none border-0 bg-transparent text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:py-1.5 sm:text-sm sm:leading-6 max-h-36 overflow-y-auto scrollbar-thumb-blue-lighter scrollbar-thumb-rounded scrollbar-track-blue-lighter scrolling-touch"
         />
 
         <div
@@ -86,7 +91,7 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
             <Button
               onClick={() => sendMessage()}
               isLoading={isLoading}
-              disabled={input.length === 0}
+              disabled={input.length === 0 || isLoading}
               type="submit"
             >
               Send
