@@ -36,7 +36,7 @@ const FriendRequestsOptions: FC<FriendRequestsOptionsProps> = ({
       );
       pusherClient.unbind("incoming_friend_requests", triggerEvent);
     };
-  }, []);
+  }, [sessionId]);
 
   return (
     <Link

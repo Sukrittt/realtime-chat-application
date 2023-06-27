@@ -38,7 +38,7 @@ const Messages: FC<MessagesProps> = ({
       pusherClient.unsubscribe(toPusherKey(`chat:${chatId}`));
       pusherClient.unbind("incoming-message", triggerFunction);
     };
-  }, []);
+  }, [chatId]);
 
   const formatTimeStamp = (timestamp: number) => {
     return format(timestamp, "HH:mm");
