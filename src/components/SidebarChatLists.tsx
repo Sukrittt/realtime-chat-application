@@ -2,7 +2,7 @@
 import { FC, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-import { chatHrefConstructor, toPusherKey } from "@/lib/utils";
+import { chatHrefConstructor, toPusherKey, trimMessage } from "@/lib/utils";
 import { pusherClient } from "@/lib/pusher";
 import { toast } from "@/hooks/use-toast";
 import { buttonVariants } from "@/ui/Button";
@@ -31,13 +31,12 @@ const SidebarChatLists: FC<SidebarChatListsProps> = ({
     pusherClient.subscribe(toPusherKey(`user-${sessionId}:friends`));
 
     const newMessageHandler = (message: ExtendedMessage) => {
-      const chatHref = `${chatHrefConstructor(sessionId, message.senderId)}`;
+      const chatHref = `/dashboard/chat/${chatHrefConstructor(
+        sessionId,
+        message.senderId
+      )}`;
       const shouldNotifyUser = pathname !== chatHref;
-      const trimmedDescription =
-        message.text.length > 50
-          ? `${message.text.slice(0, 15)}...`
-          : message.text;
-
+      const trimmedDescription = trimMessage(message.text, 50);
       if (!shouldNotifyUser) return;
 
       const { dismiss } = toast({
@@ -85,12 +84,15 @@ const SidebarChatLists: FC<SidebarChatListsProps> = ({
         const unseenMessageCount = unseenMessages.filter((unseenMsg) => {
           return unseenMsg.senderId === friend.id;
         }).length;
-        const href = chatHrefConstructor(friend.id, sessionId);
+        const chatHref = `/dashboard/chat/${chatHrefConstructor(
+          friend.id,
+          sessionId
+        )}`;
 
         return (
           <li key={friend.id}>
             <a
-              href={href}
+              href={chatHref}
               className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
             >
               {friend.name}

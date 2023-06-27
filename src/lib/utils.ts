@@ -8,9 +8,13 @@ export function cn(...inputs: ClassValue[]) {
 export function chatHrefConstructor(id1: string, id2: string) {
   const sortedIds = [id1, id2].sort();
 
-  return `/dashboard/chat/${sortedIds[0]}--${sortedIds[1]}`;
+  return `${sortedIds[0]}--${sortedIds[1]}`;
 }
 
 export function toPusherKey(key: string) {
   return key.replace(/:/g, "__");
 }
+
+export const trimMessage = (text: string, trimAmount: number) => {
+  return text.length > trimAmount ? `${text.slice(0, trimAmount)}...` : text;
+};
