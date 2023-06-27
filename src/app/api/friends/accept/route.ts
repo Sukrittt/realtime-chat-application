@@ -41,19 +41,27 @@ export async function POST(req: Request) {
       return new Response("No friend request", { status: 400 });
     }
 
-    pusherServer.trigger(
-      toPusherKey(`user-${senderId}:friends`),
-      "new_friend",
-      {}
-    );
+    await Promise.all([
+      pusherServer.trigger(
+        toPusherKey(`user-${senderId}:friends`),
+        "new_friend",
+        {}
+      ),
 
-    //accept friend request
-    await db.sadd(`user-${session.user.id}:friends`, senderId);
-    await db.sadd(`user-${senderId}:friends`, session.user.id);
+      //accept friend request
+      await db.sadd(`user-${session.user.id}:friends`, senderId),
+      await db.sadd(`user-${senderId}:friends`, session.user.id),
 
-    //remove ids from friend request
-    await db.srem(`user-${senderId}:incoming_friend_requests`, session.user.id);
-    await db.srem(`user-${session.user.id}:incoming_friend_requests`, senderId);
+      //remove ids from friend request
+      await db.srem(
+        `user-${senderId}:incoming_friend_requests`,
+        session.user.id
+      ),
+      await db.srem(
+        `user-${session.user.id}:incoming_friend_requests`,
+        senderId
+      ),
+    ]);
 
     return new Response("OK");
   } catch (error) {
