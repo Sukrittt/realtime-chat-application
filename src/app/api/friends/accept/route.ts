@@ -4,6 +4,8 @@ import { IdValidator } from "@/lib/validators/add-friend";
 import { getAuthSession } from "@/lib/auth";
 import { fetchRedis } from "@/helpers/redis";
 import { db } from "@/lib/db";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -38,6 +40,12 @@ export async function POST(req: Request) {
     if (!hasFriendRequest) {
       return new Response("No friend request", { status: 400 });
     }
+
+    pusherServer.trigger(
+      toPusherKey(`user-${senderId}:friends`),
+      "new_friend",
+      {}
+    );
 
     //accept friend request
     await db.sadd(`user-${session.user.id}:friends`, senderId);
