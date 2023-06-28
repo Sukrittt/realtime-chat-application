@@ -101,7 +101,7 @@ input:-webkit-autofill:active{
 
   .scrollbar-thumb-blue-lighter::-webkit-scrollbar-thumb{
     --bg-opacity: 1;
-    background-color: rgba(237, 242, 247, var(--bg-opacity));
+    background-color: rgba(223, 234, 245, var(--bg-opacity));
   }
 
   .scrollbar-thumb-rounded::-webkit-scrollbar-thumb{

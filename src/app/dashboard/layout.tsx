@@ -11,6 +11,7 @@ import { getFriendsByUserId } from "@/helpers/get-friends-by-userId";
 import SidebarChatLists from "@/components/SidebarChatLists";
 import MobileChatLayout from "@/components/MobileChatLayout";
 import { SidebarOption } from "@/types/typing";
+import { formatName } from "@/lib/utils";
 
 interface layoutProps {
   children: React.ReactNode;
@@ -42,7 +43,7 @@ const layout = async ({ children }: layoutProps) => {
   ).length;
 
   return (
-    <div className="w-full flex h-screen">
+    <div className="w-full flex h-screen bg-zinc-100 p-2">
       <div className="md:hidden">
         <MobileChatLayout
           friends={friends}
@@ -51,7 +52,7 @@ const layout = async ({ children }: layoutProps) => {
           unseenRequestCount={unseenRequestCount}
         />
       </div>
-      <div className="hidden md:flex h-full w-full max-w-xs grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
+      <div className="hidden md:flex h-full w-full rounded-xl shadow-md max-w-xs grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
         <Link href="/dashboard" className="flex h-16 shrink-0 items-center">
           <Icons.Logo className="h-8 w-auto text-indigo-600" />
         </Link>
@@ -112,7 +113,9 @@ const layout = async ({ children }: layoutProps) => {
                 </div>
                 <span className="sr-only">Your profile</span>
                 <div className="flex flex-col w-[80%]">
-                  <span aria-hidden="true">{session.user.name}</span>
+                  <span aria-hidden="true">
+                    {formatName(session.user.name || "")}
+                  </span>
                   <span
                     className="text-xs text-zinc-400 truncate"
                     aria-hidden="true"

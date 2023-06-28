@@ -2,7 +2,12 @@
 import { FC, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-import { chatHrefConstructor, toPusherKey, trimMessage } from "@/lib/utils";
+import {
+  chatHrefConstructor,
+  formatName,
+  toPusherKey,
+  trimMessage,
+} from "@/lib/utils";
 import { pusherClient } from "@/lib/pusher";
 import { toast } from "@/hooks/use-toast";
 import { buttonVariants } from "@/ui/Button";
@@ -89,6 +94,7 @@ const SidebarChatLists: FC<SidebarChatListsProps> = ({
           friend.id,
           sessionId
         )}`;
+        const formatedUserName = formatName(friend.name);
 
         return (
           <li key={friend.id}>
@@ -96,7 +102,7 @@ const SidebarChatLists: FC<SidebarChatListsProps> = ({
               href={chatHref}
               className="text-gray-700 hover:text-indigo-600 hover:bg-gray-50 group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
             >
-              {friend.name}
+              {formatedUserName}
               {unseenMessageCount > 0 && (
                 <div className="bg-indigo-600 font-medium text-xs text-white w-4 h-4 rounded-full flex justify-center items-center">
                   {unseenMessageCount}
