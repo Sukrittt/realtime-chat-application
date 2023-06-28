@@ -41,26 +41,33 @@ export async function POST(req: Request) {
       return new Response("No friend request", { status: 400 });
     }
 
+    const [userRaw, friendRaw] = (await Promise.all([
+      fetchRedis("get", `user:${session.user.id}`),
+      fetchRedis("get", `user:${senderId}`),
+    ])) as [string, string];
+
+    const user = JSON.parse(userRaw) as User;
+    const friend = JSON.parse(friendRaw) as User;
+
     await Promise.all([
       pusherServer.trigger(
         toPusherKey(`user-${senderId}:friends`),
         "new_friend",
-        {}
+        user
+      ),
+      pusherServer.trigger(
+        toPusherKey(`user-${session.user.id}:friends`),
+        "new_friend",
+        friend
       ),
 
       //accept friend request
-      await db.sadd(`user-${session.user.id}:friends`, senderId),
-      await db.sadd(`user-${senderId}:friends`, session.user.id),
+      db.sadd(`user-${session.user.id}:friends`, senderId),
+      db.sadd(`user-${senderId}:friends`, session.user.id),
 
       //remove ids from friend request
-      await db.srem(
-        `user-${senderId}:incoming_friend_requests`,
-        session.user.id
-      ),
-      await db.srem(
-        `user-${session.user.id}:incoming_friend_requests`,
-        senderId
-      ),
+      db.srem(`user-${senderId}:incoming_friend_requests`, session.user.id),
+      db.srem(`user-${session.user.id}:incoming_friend_requests`, senderId),
     ]);
 
     return new Response("OK");

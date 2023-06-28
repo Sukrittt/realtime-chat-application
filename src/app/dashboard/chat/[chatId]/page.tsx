@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 
-import { db } from "@/lib/db";
 import { getAuthSession } from "@/lib/auth";
 import { fetchRedis } from "@/helpers/redis";
 import Messages from "@/components/chat/Messages";
@@ -50,7 +49,12 @@ const page = async ({ params }: PageProps) => {
   }
 
   const chatPartnerId = user.id === userId1 ? userId2 : userId1; //figuring out the id of the chat partner
-  const chatPartner = (await db.get(`user:${chatPartnerId}`)) as User;
+  // const chatPartner = (await db.get(`user:${chatPartnerId}`)) as User;
+  const chatPartnerRaw = (await fetchRedis(
+    "get",
+    `user:${chatPartnerId}`
+  )) as string;
+  const chatPartner = JSON.parse(chatPartnerRaw) as User;
 
   const initialMessages = await getChatMessages(chatId);
 
