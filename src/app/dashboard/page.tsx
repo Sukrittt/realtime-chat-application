@@ -54,9 +54,9 @@ const page = async () => {
                 session.user.id,
                 friend.id
               )}`}
-              className="relative sm:flex"
+              className="relative sm:flex break-words"
             >
-              <div className="mb-4 flex-shrink-0 sm:mb-0 sm:mr-4">
+              <div className="mb-4 sm:mb-0 sm:mr-4">
                 <div className="relative h-6 w-6">
                   <Image
                     referrerPolicy="no-referrer"
@@ -68,14 +68,14 @@ const page = async () => {
                 </div>
               </div>
 
-              <div>
+              <div className="break-words">
                 <h4 className="text-lg font-semibold">{friend.name}</h4>
-                <p className="mt-1 max-w-md">
+                <span className="mt-1 max-w-md break-words">
                   <span className="text-zinc-400">
                     {friend.lastMessage.senderId === session.user.id && "You: "}
                   </span>
-                  {trimMessage(friend.lastMessage.text, 80)}
-                </p>
+                  hello{trimMessage(friend.lastMessage.text, 40)}
+                </span>
               </div>
             </Link>
           </div>
