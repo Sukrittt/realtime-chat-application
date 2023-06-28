@@ -27,7 +27,7 @@ const Page = () => {
 
   return (
     <>
-      <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8 border border-red-500">
+      <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full flex flex-col items-center max-w-md space-y-8">
           <div className="flex items-center gap-x-4">
             <Icons.Logo className="h-8 w-auto text-indigo-600" />
