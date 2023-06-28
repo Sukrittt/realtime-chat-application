@@ -4,8 +4,10 @@ import { format, isSameDay } from "date-fns";
 import Image from "next/image";
 
 import { MessageType } from "@/lib/validators/message";
-import { cn, toPusherKey } from "@/lib/utils";
+import { cn, toPusherKey, trimMessage } from "@/lib/utils";
 import { pusherClient } from "@/lib/pusher";
+import ChatContenxtMenu from "@/components/chat/ChatContenxtMenu";
+import useMessageModal from "@/hooks/useMessage";
 
 interface MessagesProps {
   initialMessages: MessageType[];
@@ -24,6 +26,8 @@ const Messages: FC<MessagesProps> = ({
 }) => {
   const scrolldownRef = useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
+
+  const { setReplyTo } = useMessageModal();
 
   useEffect(() => {
     pusherClient.subscribe(toPusherKey(`chat:${chatId}`));
@@ -60,6 +64,11 @@ const Messages: FC<MessagesProps> = ({
     return isDifferentDay;
   };
 
+  const replyToMessage = (id: string) => {
+    const message = messages.find((message) => message.id === id);
+    setReplyTo(message!);
+  };
+
   return (
     <div
       className="flex h-full flex-1 flex-col-reverse gap-4 p-3 overflow-y-auto scrollbar-thumb-blue-lighter scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch"
@@ -72,6 +81,10 @@ const Messages: FC<MessagesProps> = ({
         const nextMessageFromSameUser =
           messages[index - 1]?.senderId === messages[index].senderId;
 
+        const imageSrc =
+          (isCurrentUser ? (sessionImage as string) : chatPartner.image) ||
+          "/images/placeholder-user-3.png";
+
         return (
           <Fragment key={`${message.id}-${message.timestamp}`}>
             <div id="chat-message">
@@ -82,33 +95,50 @@ const Messages: FC<MessagesProps> = ({
               >
                 <div
                   className={cn(
-                    "flex flex-col space-y-2 text-base max-w-xs md:max-w-md mx-2",
+                    "flex flex-col space-y-2 text-base max-w-xs md:max-w-md mx-2 justify-end",
                     {
                       "order-1 items-end": isCurrentUser,
                       "order-2 items-start": !isCurrentUser,
                     }
                   )}
                 >
-                  <div
-                    className={cn(
-                      "px-4 py-2 rounded-lg inline-block break-words w-full relative",
-                      {
-                        "bg-indigo-600 text-white": isCurrentUser,
-                        "bg-gray-200 text-gray-900": !isCurrentUser,
-                        "rounded-br-none":
-                          !nextMessageFromSameUser && isCurrentUser,
-                        "rounded-bl-none":
-                          !nextMessageFromSameUser && !isCurrentUser,
-                      }
-                    )}
+                  <ChatContenxtMenu
+                    messageId={message.id}
+                    replyToMessage={replyToMessage}
                   >
-                    <span className="pr-10">{message.text}</span>{" "}
-                    <span className="ml-2 text-xs text-gray-400 absolute right-3 bottom-2.5">
-                      {formatTimeStamp(message.timestamp)}
-                    </span>
-                  </div>
+                    {message.replyTo && (
+                      <ReplyMessage
+                        message={message.replyTo}
+                        sessionId={sessionId}
+                        currentUser={isCurrentUser}
+                      />
+                    )}
+                    <div
+                      className={cn("w-full flex", {
+                        "justify-end": isCurrentUser,
+                      })}
+                    >
+                      <div
+                        className={cn(
+                          "px-4 py-2 rounded-xl inline-flex justify-end break-words w-auto relative",
+                          {
+                            "bg-indigo-600 text-white": isCurrentUser,
+                            "bg-gray-200 text-gray-900": !isCurrentUser,
+                            "rounded-br-none":
+                              !nextMessageFromSameUser && isCurrentUser,
+                            "rounded-bl-none":
+                              !nextMessageFromSameUser && !isCurrentUser,
+                          }
+                        )}
+                      >
+                        <span className="pr-10">{message.text}</span>{" "}
+                        <span className="ml-2 text-xs text-gray-400 absolute right-3 bottom-2.5">
+                          {formatTimeStamp(message.timestamp)}
+                        </span>
+                      </div>
+                    </div>
+                  </ChatContenxtMenu>
                 </div>
-
                 <div
                   className={cn("relative w-6 h-6", {
                     "order-2": isCurrentUser,
@@ -118,11 +148,7 @@ const Messages: FC<MessagesProps> = ({
                 >
                   <Image
                     fill
-                    src={
-                      isCurrentUser
-                        ? (sessionImage as string)
-                        : chatPartner.image || "/images/placeholder-3.png"
-                    }
+                    src={imageSrc}
                     referrerPolicy="no-referrer"
                     className="rounded-full"
                     alt="user-profile"
@@ -152,3 +178,39 @@ const Messages: FC<MessagesProps> = ({
 };
 
 export default Messages;
+
+const ReplyMessage = ({
+  message,
+  sessionId,
+  currentUser,
+}: {
+  message: MessageType;
+  sessionId: string;
+  currentUser: boolean;
+}) => {
+  const trimmedMessage = trimMessage(message.text, 50);
+  const userMessage = message.senderId === sessionId;
+
+  return (
+    <div
+      className={cn("border-zinc-200 h-10 relative w-[400px]", {
+        "border-r-[3px]": currentUser,
+        "border-l-[3px]": !currentUser,
+      })}
+    >
+      <div
+        className={cn(
+          "flex justify-end absolute rounded-xl px-4 py-2 text-sm",
+          {
+            "bg-gray-200 text-zinc-500": userMessage,
+            "bg-indigo-500 text-zinc-200": !userMessage,
+            "right-1": currentUser,
+            "left-1": !currentUser,
+          }
+        )}
+      >
+        {trimmedMessage}
+      </div>
+    </div>
+  );
+};

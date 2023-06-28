@@ -15,7 +15,7 @@ import { toPusherKey } from "@/lib/utils";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { chatId, text } = SendMessageValidator.parse(body);
+    const { chatId, text, replyTo } = SendMessageValidator.parse(body);
 
     const session = await getAuthSession();
 
@@ -54,6 +54,7 @@ export async function POST(req: Request) {
       senderId: session.user.id,
       text,
       timestamp,
+      replyTo,
     };
 
     const message = MessageValidator.parse(messageData);

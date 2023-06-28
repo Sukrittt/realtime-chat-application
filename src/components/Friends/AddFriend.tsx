@@ -49,6 +49,7 @@ const AddFriend = () => {
       setSuccessState(false);
     },
     onSuccess: () => {
+      setTimeout(() => setSuccessState(false), 3000);
       setSuccessState(true);
       reset();
     },

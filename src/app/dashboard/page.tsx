@@ -74,7 +74,7 @@ const page = async () => {
                   <span className="text-zinc-400">
                     {friend.lastMessage.senderId === session.user.id && "You: "}
                   </span>
-                  hello{trimMessage(friend.lastMessage.text, 40)}
+                  {trimMessage(friend.lastMessage.text, 40)}
                 </span>
               </div>
             </Link>

@@ -1,13 +1,16 @@
 "use client";
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
+import { X } from "lucide-react";
 
 import Button from "@/ui/Button";
-import { SendMessageType } from "@/lib/validators/message";
+import { MessageType, SendMessageType } from "@/lib/validators/message";
 import { useAuthToast } from "@/hooks/useAuthToast";
 import { toast } from "@/hooks/use-toast";
+import useMessageModal from "@/hooks/useMessage";
+import { trimMessage } from "@/lib/utils";
 
 interface ChatInputProps {
   chatPartner: User;
@@ -17,12 +20,17 @@ interface ChatInputProps {
 const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const [input, setInput] = useState<string>("");
+  const { replyTo, reset } = useMessageModal();
 
   const { loginToast } = useAuthToast();
 
   const { mutate: sendMessage, isLoading } = useMutation({
     mutationFn: async () => {
-      const payload: SendMessageType = { text: input, chatId };
+      const payload: SendMessageType = {
+        text: input,
+        chatId,
+        replyTo: replyTo,
+      };
       const { data } = await axios.post("/api/message/send", payload);
 
       return data;
@@ -49,12 +57,32 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
     },
     onSuccess: () => {
       setInput("");
+      reset();
       textAreaRef.current?.focus();
     },
   });
 
+  const [change, setChange] = useState(false); //I seriously don't know why this works : )
+
+  useEffect(() => {
+    window.addEventListener("keydown", (event) => {
+      if (event.code === "Escape" && replyTo) {
+        reset();
+      }
+    });
+  }, [replyTo, reset]);
+
+  useEffect(() => {
+    setChange((prev) => !prev);
+  }, [replyTo]);
+
+  useEffect(() => {
+    textAreaRef.current?.focus();
+  }, [change]);
+
   return (
     <div className="border-t border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
+      {replyTo && <ReplyTo replyTo={replyTo} />}
       <div className="relative flex-1 overflow-hidden rounded-lg shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-indigo-600">
         <TextareaAutosize
           ref={textAreaRef}
@@ -104,3 +132,25 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
 };
 
 export default ChatInput;
+
+interface ReplyToProps {
+  replyTo: MessageType;
+}
+
+const ReplyTo: FC<ReplyToProps> = ({ replyTo }) => {
+  const { reset } = useMessageModal();
+
+  const trimmedMessage = trimMessage(replyTo.text, 100);
+
+  return (
+    <div className="rounded-md border-l-4 mb-1 bg-zinc-300 border-indigo-600 p-2 flex items-center justify-between">
+      <span className="text-zinc-500 text-sm">{trimmedMessage}</span>
+      <div
+        onClick={() => reset()}
+        className="cursor-pointer focus:outline-none focus-ring-2 focus:ring-offset-2 focus:ring-slate-400"
+      >
+        <X className="h-4 w-4 text-zinc-700" />
+      </div>
+    </div>
+  );
+};

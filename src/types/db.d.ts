@@ -14,6 +14,7 @@ interface Message {
   senderId: string;
   receiverId: string;
   text: string;
+  replyTo?: Message;
   timestamp: number;
 }
 
