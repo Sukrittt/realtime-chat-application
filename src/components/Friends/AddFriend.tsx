@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios, { AxiosError } from "axios";
 import { z } from "zod";
@@ -7,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "@/ui/Input";
 import Button from "@/ui/Button";
-import { EmailRequestType, emailValidator } from "@/lib/validators/add-friend";
 import { toast } from "@/hooks/use-toast";
+import { EmailRequestType, emailValidator } from "@/lib/validators/add-friend";
 
 const AddFriend = () => {
   const {
@@ -23,6 +24,7 @@ const AddFriend = () => {
       email: "",
     },
   });
+  const [successState, setSuccessState] = useState<boolean>(false);
 
   const { mutate: addFriend, isLoading } = useMutation({
     mutationFn: async (email: string) => {
@@ -44,12 +46,10 @@ const AddFriend = () => {
         description: "Something went wrong.",
         variant: "destructive",
       });
+      setSuccessState(false);
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Friend request sent!",
-      });
+      setSuccessState(true);
       reset();
     },
   });
@@ -75,6 +75,10 @@ const AddFriend = () => {
       </div>
       {errors?.email && (
         <p className="mt-1 text-sm text-red-600">{errors?.email?.message}</p>
+      )}
+      <p className="mt-1 text-sm text-red-600">{errors.email?.message}</p>
+      {successState && (
+        <p className="mt-1 text-sm text-green-600">Friend request sent!</p>
       )}
     </form>
   );
