@@ -146,8 +146,10 @@ const FriendRequests: FC<FriendRequestsProps> = ({
             className="flex gap-4 items-center w-full justify-around"
           >
             <div className="flex items-center gap-x-3 w-full">
-              <UserPlus className="text-black" />
-              <p className="font-medium text-lg">{request.senderEmail}</p>
+              <UserPlus className="text-zinc-800 h-6 w-6" />
+              <p className="font-medium text-lg text-zinc-800">
+                {request.senderEmail}
+              </p>
             </div>
             <div className="flex items-center justify-evenly w-2/3">
               <button

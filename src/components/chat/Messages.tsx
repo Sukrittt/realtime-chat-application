@@ -52,28 +52,12 @@ const Messages: FC<MessagesProps> = ({
     return format(timestamp, "dd-MMM-yyyy");
   };
 
-  // const provideTimeStampInBetween = (
-  //   providedtimestamp: number,
-  //   previousTimestamp: number
-  // ) => {
-  //   const previousDate = new Date(previousTimestamp);
-  //   const providedDate = new Date(providedtimestamp);
-
-  //   const isDifferentDay = !isSameDay(previousDate, providedDate);
-
-  //   return isDifferentDay;
-  // };
-
   const provideTimeStampInBetween = (
     providedTimestamp: number,
     previousTimestamp: number
   ) => {
     const previousDate = new Date(previousTimestamp);
     const providedDate = new Date(providedTimestamp);
-
-    console.log("previousDate", previousDate);
-    console.log("providedDate", providedDate);
-    console.log("------------");
 
     const currentDate = new Date();
 
