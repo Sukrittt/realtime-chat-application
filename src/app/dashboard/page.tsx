@@ -24,7 +24,14 @@ const page = async () => {
         -1
       )) as string[];
 
-      const lastMessage = JSON.parse(parsedLastMessage) as Message;
+      if (!parsedLastMessage) {
+        return {
+          ...friend,
+          lastMessage: null,
+        };
+      }
+
+      const lastMessage = (JSON.parse(parsedLastMessage) as Message) || null;
 
       return {
         ...friend,
