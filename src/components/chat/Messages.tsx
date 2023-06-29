@@ -1,6 +1,6 @@
 "use client";
 import { FC, Fragment, useEffect, useRef, useState } from "react";
-import { format, isSameDay } from "date-fns";
+import { format, isSameDay, isSameWeek, isSameYear, subDays } from "date-fns";
 import Image from "next/image";
 
 import { MessageType } from "@/lib/validators/message";
@@ -52,16 +52,57 @@ const Messages: FC<MessagesProps> = ({
     return format(timestamp, "dd-MMM-yyyy");
   };
 
+  // const provideTimeStampInBetween = (
+  //   providedtimestamp: number,
+  //   previousTimestamp: number
+  // ) => {
+  //   const previousDate = new Date(previousTimestamp);
+  //   const providedDate = new Date(providedtimestamp);
+
+  //   const isDifferentDay = !isSameDay(previousDate, providedDate);
+
+  //   return isDifferentDay;
+  // };
+
   const provideTimeStampInBetween = (
-    timestamp: number,
+    providedTimestamp: number,
     previousTimestamp: number
   ) => {
     const previousDate = new Date(previousTimestamp);
-    const providedDate = new Date(timestamp);
+    const providedDate = new Date(providedTimestamp);
 
-    const isDifferentDay = !isSameDay(previousDate, providedDate);
+    console.log("previousDate", previousDate);
+    console.log("providedDate", providedDate);
+    console.log("------------");
 
-    return isDifferentDay;
+    const currentDate = new Date();
+
+    const hourDifference = Math.abs(
+      providedDate.getHours() - previousDate.getHours()
+    );
+
+    if (hourDifference < 1) {
+      return;
+    }
+
+    if (isSameDay(providedDate, currentDate)) {
+      return format(providedDate, "'Today' HH:mm");
+    }
+
+    const yesterday = subDays(currentDate, 1);
+    if (isSameDay(providedDate, yesterday)) {
+      return format(providedDate, "'Yesterday' HH:mm");
+    }
+
+    if (isSameWeek(providedDate, currentDate)) {
+      return format(providedDate, "EEE HH:mm");
+    }
+
+    if (isSameYear(providedDate, currentDate)) {
+      return format(providedDate, "dd MMM, HH:mm");
+    }
+
+    return format(providedDate, "dd-MMM-yyyy");
   };
 
   const replyToMessage = (id: string) => {
@@ -84,6 +125,13 @@ const Messages: FC<MessagesProps> = ({
         const imageSrc =
           (isCurrentUser ? (sessionImage as string) : chatPartner.image) ||
           "/images/placeholder-user-3.png";
+
+        const displayTimeStamp =
+          index !== messages.length - 1 &&
+          provideTimeStampInBetween(
+            messages[index].timestamp,
+            messages[index + 1].timestamp
+          );
 
         return (
           <Fragment key={`${message.id}-${message.timestamp}`}>
@@ -156,20 +204,16 @@ const Messages: FC<MessagesProps> = ({
                 </div>
               </div>
             </div>
-            {index !== messages.length - 1 &&
-              provideTimeStampInBetween(
-                messages[index].timestamp,
-                messages[index + 1].timestamp
-              ) && (
-                <p className="text-center text-zinc-500 text-sm my-5">
-                  {formatTimeGaps(message.timestamp)}
-                </p>
-              )}
+            {displayTimeStamp && (
+              <p className="text-center text-zinc-500 text-xs font-semibold my-5">
+                {displayTimeStamp}
+              </p>
+            )}
           </Fragment>
         );
       })}
       {messages.length > 0 && (
-        <p className="text-center text-zinc-500 text-sm my-5">
+        <p className="text-center text-zinc-500 text-xs font-semibold my-5">
           {formatTimeGaps(messages[messages.length - 1].timestamp)}
         </p>
       )}
