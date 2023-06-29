@@ -88,6 +88,10 @@ const FriendRequests: FC<FriendRequestsProps> = ({
       setFriendRequests((prev) =>
         prev.filter((request) => request.senderId !== senderId)
       );
+      toast({
+        title: "Please wait",
+        description: "Accepting friend request...",
+      });
     },
   });
 
@@ -98,7 +102,25 @@ const FriendRequests: FC<FriendRequestsProps> = ({
 
       return data;
     },
-    onError: () => {},
+    onError: (error) => {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 401) {
+          return loginToast();
+        } else if (error.response?.status === 422) {
+          return toast({
+            title: "Invalid data passed",
+            description: "Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+
+      return toast({
+        title: "Something went wrong",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    },
     onSuccess: () => {
       router.refresh();
     },
@@ -106,6 +128,10 @@ const FriendRequests: FC<FriendRequestsProps> = ({
       setFriendRequests((prev) =>
         prev.filter((request) => request.senderId !== senderId)
       );
+      toast({
+        title: "Please wait",
+        description: "Declining friend request...",
+      });
     },
   });
 
