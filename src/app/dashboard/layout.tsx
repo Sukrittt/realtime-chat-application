@@ -57,15 +57,14 @@ const layout = async ({ children }: layoutProps) => {
           <Icons.Logo className="h-8 w-auto text-indigo-600" />
         </Link>
 
-        {friends.length > 0 && (
-          <div className="text-xs font-semibold leading-6 text-gray-400">
-            Your chats
-          </div>
-        )}
-
         <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
             <li>
+              {/* {friends.length > 0 && ( */}
+              <div className="text-xs font-semibold leading-6 text-gray-400">
+                Your chats
+              </div>
+              {/* )} */}
               <SidebarChatLists friends={friends} sessionId={session.user.id} />
             </li>
             <li>

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { chatHrefConstructor, formatName, trimMessage } from "@/lib/utils";
 
 type ExtendedMessage = {
-  lastMessage: Message;
+  lastMessage: Message | null;
 } & Pick<User, "id" | "name" | "email" | "image">;
 
 interface RecentChatsProps {
@@ -55,13 +55,15 @@ const RecentChats: FC<RecentChatsProps> = ({
                   <h4 className="text-zinc-800 font-medium">
                     {formatedUserName}
                   </h4>
-                  <span className="mt-1 max-w-md break-words text-sm">
-                    <span className="text-zinc-400">
-                      {friend.lastMessage.senderId === session.user.id &&
-                        "You: "}
+                  {friend.lastMessage && (
+                    <span className="mt-1 max-w-md break-words text-sm">
+                      <span className="text-zinc-400">
+                        {friend.lastMessage.senderId === session.user.id &&
+                          "You: "}
+                      </span>
+                      {trimMessage(friend.lastMessage.text, 40)}
                     </span>
-                    {trimMessage(friend.lastMessage.text, 40)}
-                  </span>
+                  )}
                 </div>
               </Link>
             );

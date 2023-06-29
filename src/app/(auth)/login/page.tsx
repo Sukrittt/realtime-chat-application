@@ -3,17 +3,19 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 
 import Button from "@/ui/Button";
-import { Google, Icons } from "@/components/Icons";
+import { Github, Google, Icons } from "@/components/Icons";
 import { toast } from "@/hooks/use-toast";
 
-const Page = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+type Provider = "google" | "github";
 
-  const loginWithGoogle = async () => {
-    setIsLoading(true);
+const Page = () => {
+  const [isLoading, setIsLoading] = useState<Provider | null>(null);
+
+  const loginWithProviders = async (provider: Provider) => {
+    setIsLoading(provider);
 
     try {
-      await signIn("google");
+      await signIn(provider);
     } catch (error) {
       toast({
         title: "Authentication Error",
@@ -21,7 +23,7 @@ const Page = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(null);
     }
   };
 
@@ -35,14 +37,25 @@ const Page = () => {
               Sign in to your account
             </h2>
           </div>
+          <div className="space-y-4 w-full">
+            <Button
+              variant="ghost"
+              isLoading={isLoading === "google"}
+              className="border border-zinc-300 max-w-sm mx-auto w-full flex justify-center"
+              onClick={() => loginWithProviders("google")}
+            >
+              {isLoading !== "google" && <Google />} Google
+            </Button>
 
-          <Button
-            isLoading={isLoading}
-            className="max-w-sm mx-auto w-full flex justify-center"
-            onClick={loginWithGoogle}
-          >
-            {!isLoading && <Google />} Google
-          </Button>
+            <Button
+              isLoading={isLoading === "github"}
+              className="border border-zinc-300 max-w-sm mx-auto w-full flex justify-center"
+              onClick={() => loginWithProviders("github")}
+              variant="ghost"
+            >
+              {isLoading !== "github" && <Github />} Github
+            </Button>
+          </div>
         </div>
       </div>
     </>
