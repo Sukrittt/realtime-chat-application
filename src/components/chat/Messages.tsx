@@ -233,7 +233,10 @@ const ReplyMessage = ({
   currentUser: boolean;
 }) => {
   const trimmedMessage = trimMessage(message.text, 50);
-  const userMessage = message.senderId === sessionId;
+
+  const userMessage = !currentUser
+    ? message.senderId !== sessionId
+    : message.senderId === sessionId;
 
   return (
     <div
