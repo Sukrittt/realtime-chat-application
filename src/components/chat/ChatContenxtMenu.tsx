@@ -14,12 +14,14 @@ interface ChatContenxtMenuProps {
   children: ReactNode;
   messageId: string;
   replyToMessage: (id: string) => void;
+  copyMessage: (id: string) => void;
 }
 
 const ChatContenxtMenu: FC<ChatContenxtMenuProps> = ({
   children,
   messageId,
   replyToMessage,
+  copyMessage,
 }) => {
   return (
     <ContextMenu>
@@ -31,7 +33,7 @@ const ChatContenxtMenu: FC<ChatContenxtMenuProps> = ({
             <Reply className="h-4 w-4 text-zinc-700" />
           </ContextMenuShortcut>
         </ContextMenuItem>
-        <ContextMenuItem inset>
+        <ContextMenuItem inset onClick={() => copyMessage(messageId)}>
           Copy
           <ContextMenuShortcut>
             <Copy className="h-4 w-4 text-zinc-700" />

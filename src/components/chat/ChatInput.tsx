@@ -15,9 +15,10 @@ import { trimMessage } from "@/lib/utils";
 interface ChatInputProps {
   chatPartner: User;
   chatId: string;
+  sessionId: string;
 }
 
-const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId }) => {
+const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId, sessionId }) => {
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const [input, setInput] = useState<string>("");
   const { replyTo, reset } = useMessageModal();
