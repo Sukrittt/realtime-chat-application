@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import axios, { AxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
+import { usePrevious } from "@mantine/hooks";
 
 import { MessageReactionType, MessageType } from "@/lib/validators/message";
 import { chatHrefConstructor, cn, toPusherKey, trimMessage } from "@/lib/utils";
@@ -34,6 +35,7 @@ const Messages: FC<MessagesProps> = ({
   const scrolldownRef = useRef<HTMLDivElement | null>(null);
 
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
+  const previousMessages = usePrevious(messages);
   const [seen, setSeen] = useState<boolean>(false);
 
   const router = useRouter();
@@ -193,6 +195,8 @@ const Messages: FC<MessagesProps> = ({
       return data;
     },
     onError: (error) => {
+      setMessages(previousMessages || []);
+
       if (error instanceof AxiosError) {
         const status = error.response?.status;
         if (status === 401) {
@@ -207,9 +211,42 @@ const Messages: FC<MessagesProps> = ({
     },
     onSuccess: () => {
       router.refresh();
-      toast({
-        description: "Reacted to message",
-      });
+    },
+    onMutate: ({ id, emogi }: MessageReactionType) => {
+      setMessages((prev) =>
+        prev.map((message) => {
+          if (message.id !== id) return message;
+
+          if (message.senderId === sessionId) {
+            if (message.senderReaction === emogi)
+              return { ...message, senderReaction: null };
+
+            if (message.senderReaction && message.senderReaction !== emogi) {
+              const updatedMessage = { ...message };
+              updatedMessage.senderReaction = emogi;
+
+              return { ...updatedMessage };
+            }
+
+            return { ...message, senderReaction: emogi };
+          } else {
+            if (message.receiverReaction === emogi)
+              return { ...message, receiverReaction: null };
+
+            if (
+              message.receiverReaction &&
+              message.receiverReaction !== emogi
+            ) {
+              const updatedMessage = { ...message };
+              updatedMessage.receiverReaction = emogi;
+
+              return { ...updatedMessage };
+            }
+
+            return { ...message, receiverReaction: emogi };
+          }
+        })
+      );
     },
   });
 
