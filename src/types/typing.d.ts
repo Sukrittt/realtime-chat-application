@@ -6,3 +6,9 @@ interface SidebarOption {
   href: string;
   Icon: Icon;
 }
+
+type emogiType = "❤️" | "😂" | "😍" | "😡" | "😭";
+interface ReactionType {
+  id: string;
+  emogi: emogiType;
+}

@@ -13,6 +13,8 @@ export const MessageValidator = z.object({
   text: z.string().min(1).max(1500),
   timestamp: z.number(),
   replyTo: dummyMessage.optional(),
+  senderReaction: z.string().optional().nullable(),
+  receiverReaction: z.string().optional().nullable(),
 });
 
 export const MessageArrayValidator = z.array(MessageValidator);
@@ -26,3 +28,11 @@ export const SendMessageValidator = z.object({
 });
 
 export type SendMessageType = z.infer<typeof SendMessageValidator>;
+
+export const MessageReaction = z.object({
+  id: z.string(),
+  emogi: z.string(),
+  chatId: z.string(),
+});
+
+export type MessageReactionType = z.infer<typeof MessageReaction>;

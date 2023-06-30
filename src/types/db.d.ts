@@ -16,6 +16,8 @@ interface Message {
   text: string;
   replyTo?: Message;
   timestamp: number;
+  senderReaction?: string | null;
+  receiverReaction?: string | null;
 }
 
 interface FriendRequest {

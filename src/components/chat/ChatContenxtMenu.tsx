@@ -9,12 +9,37 @@ import {
   ContextMenuTrigger,
 } from "@/ui/ContextMenu";
 import { Copy, Reply, Star, Trash2 } from "lucide-react";
+import { ReactionType, emogiType } from "@/types/typing";
+
+const reactionList: ReactionType[] = [
+  {
+    id: "1",
+    emogi: "❤️",
+  },
+  {
+    id: "2",
+    emogi: "😂",
+  },
+  {
+    id: "3",
+    emogi: "😍",
+  },
+  {
+    id: "4",
+    emogi: "😡",
+  },
+  {
+    id: "5",
+    emogi: "😭",
+  },
+];
 
 interface ChatContenxtMenuProps {
   children: ReactNode;
   messageId: string;
   replyToMessage: (id: string) => void;
   copyMessage: (id: string) => void;
+  reactToMessage: (id: string, reaction: emogiType) => void;
 }
 
 const ChatContenxtMenu: FC<ChatContenxtMenuProps> = ({
@@ -22,6 +47,7 @@ const ChatContenxtMenu: FC<ChatContenxtMenuProps> = ({
   messageId,
   replyToMessage,
   copyMessage,
+  reactToMessage,
 }) => {
   return (
     <ContextMenu>
@@ -54,10 +80,15 @@ const ChatContenxtMenu: FC<ChatContenxtMenuProps> = ({
         </ContextMenuItem>
         <ContextMenuSeparator />
         <div className="flex justify-around w-full">
-          <ContextMenuItem className="text-xl rounded-full">😂</ContextMenuItem>
-          <ContextMenuItem className="text-xl rounded-full">😍</ContextMenuItem>
-          <ContextMenuItem className="text-xl rounded-full">🥳</ContextMenuItem>
-          <ContextMenuItem className="text-xl rounded-full">😭</ContextMenuItem>
+          {reactionList.map((reaction) => (
+            <ContextMenuItem
+              key={reaction.id}
+              className="text-xl rounded-full"
+              onClick={() => reactToMessage(messageId, reaction.emogi)}
+            >
+              {reaction.emogi}
+            </ContextMenuItem>
+          ))}
         </div>
       </ContextMenuContent>
     </ContextMenu>

@@ -3,15 +3,18 @@ import { FC, Fragment, useEffect, useRef, useState } from "react";
 import { format, isSameDay, isSameWeek, isSameYear, subDays } from "date-fns";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { useMutation } from "@tanstack/react-query";
 
-import { MessageType } from "@/lib/validators/message";
-import { cn, toPusherKey, trimMessage } from "@/lib/utils";
+import { MessageReactionType, MessageType } from "@/lib/validators/message";
+import { chatHrefConstructor, cn, toPusherKey, trimMessage } from "@/lib/utils";
 import { pusherClient } from "@/lib/pusher";
 import ChatContenxtMenu from "@/components/chat/ChatContenxtMenu";
 import useMessageModal from "@/hooks/useMessage";
 import { IdRequestType } from "@/lib/validators/add-friend";
 import { toast } from "@/hooks/use-toast";
+import { emogiType } from "@/types/typing";
+import { useAuthToast } from "@/hooks/useAuthToast";
 
 interface MessagesProps {
   initialMessages: MessageType[];
@@ -29,11 +32,13 @@ const Messages: FC<MessagesProps> = ({
   chatId,
 }) => {
   const scrolldownRef = useRef<HTMLDivElement | null>(null);
+
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
   const [seen, setSeen] = useState<boolean>(false);
-  const router = useRouter();
 
+  const router = useRouter();
   const { setReplyTo } = useMessageModal();
+  const { loginToast } = useAuthToast();
 
   useEffect(() => {
     pusherClient.subscribe(toPusherKey(`chat:${chatId}`));
@@ -42,11 +47,24 @@ const Messages: FC<MessagesProps> = ({
       setMessages((prev) => [message, ...prev]);
     };
 
+    const triggerReaction = (updatedMessage: MessageType) => {
+      setMessages((prevMessages) => {
+        return prevMessages.map((message) => {
+          if (message.id === updatedMessage.id) {
+            return updatedMessage;
+          }
+          return message;
+        });
+      });
+    };
+
     pusherClient.bind("incoming-message", triggerFunction);
+    pusherClient.bind("reacting-message", triggerReaction);
 
     return () => {
       pusherClient.unsubscribe(toPusherKey(`chat:${chatId}`));
       pusherClient.unbind("incoming-message", triggerFunction);
+      pusherClient.unbind("reacting-message", triggerFunction);
     };
   }, [chatId]);
 
@@ -153,8 +171,47 @@ const Messages: FC<MessagesProps> = ({
 
   const replyToMessage = (id: string) => {
     const message = messages.find((message) => message.id === id);
-    setReplyTo(message!);
+    if (!message) return;
+
+    setReplyTo(message);
   };
+
+  const reactToMessage = (id: string, reaction: emogiType) => {
+    const message = messages.find((message) => message.id === id);
+    if (!message) return;
+
+    const chatId = chatHrefConstructor(sessionId, chatPartner.id);
+
+    react({ id, emogi: reaction, chatId });
+  };
+
+  const { mutate: react } = useMutation({
+    mutationFn: async ({ id, emogi, chatId }: MessageReactionType) => {
+      const payload: MessageReactionType = { id, emogi, chatId };
+
+      const { data } = await axios.post("/api/message/react", payload);
+      return data;
+    },
+    onError: (error) => {
+      if (error instanceof AxiosError) {
+        const status = error.response?.status;
+        if (status === 401) {
+          return loginToast();
+        }
+      }
+      toast({
+        title: "Something went wrong",
+        description: "Please refresh the page and try again.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      router.refresh();
+      toast({
+        description: "Reacted to message",
+      });
+    },
+  });
 
   return (
     <div
@@ -181,6 +238,16 @@ const Messages: FC<MessagesProps> = ({
 
         const showSeen = seen && index === 0;
 
+        const atLeastOneReaction =
+          message.receiverReaction &&
+          message.senderReaction &&
+          message.receiverReaction !== null &&
+          message.senderReaction !== null;
+
+        const bothPeopleReactedSameEmogi =
+          atLeastOneReaction &&
+          message.receiverReaction === message.senderReaction;
+
         return (
           <Fragment key={`${message.id}-${message.timestamp}`}>
             <div id="chat-message">
@@ -202,6 +269,7 @@ const Messages: FC<MessagesProps> = ({
                     messageId={message.id}
                     replyToMessage={replyToMessage}
                     copyMessage={copyToClipboard}
+                    reactToMessage={reactToMessage}
                   >
                     {message.replyTo && (
                       <ReplyMessage
@@ -228,6 +296,41 @@ const Messages: FC<MessagesProps> = ({
                           }
                         )}
                       >
+                        <div
+                          className={cn(
+                            "absolute rounded-full bg-zinc-100 transition hover:bg-zinc-200 -bottom-3.5",
+                            {
+                              "left-5": isCurrentUser,
+                              "right-5": !isCurrentUser,
+                            }
+                          )}
+                        >
+                          {bothPeopleReactedSameEmogi ? (
+                            <ReactedSameEmogi
+                              message={message}
+                              isCurrentUser={isCurrentUser}
+                              sessionImage={sessionImage}
+                              chatPartnerImage={chatPartner.image}
+                            />
+                          ) : (
+                            <>
+                              {message?.receiverReaction && (
+                                <span
+                                  className={cn("rounded-full bg-zinc-100")}
+                                >
+                                  {message.receiverReaction}
+                                </span>
+                              )}
+                              {message?.senderReaction && (
+                                <span
+                                  className={cn("rounded-full bg-zinc-100")}
+                                >
+                                  {message.senderReaction}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
                         <span className="pr-10">{message.text}</span>{" "}
                         <span className="ml-2 text-xs text-gray-400 absolute right-3 bottom-2.5">
                           {formatTimeStamp(message.timestamp)}
@@ -311,6 +414,50 @@ const ReplyMessage = ({
         )}
       >
         {trimmedMessage}
+      </div>
+    </div>
+  );
+};
+
+interface ReactedSameEmogiProps {
+  isCurrentUser: boolean;
+  message: MessageType;
+  sessionImage: string | null | undefined;
+  chatPartnerImage: string;
+}
+
+const ReactedSameEmogi: FC<ReactedSameEmogiProps> = ({
+  isCurrentUser,
+  message,
+  sessionImage,
+  chatPartnerImage,
+}) => {
+  return (
+    <div
+      className={cn("rounded-full bg-zinc-100 flex gap-x-2 items-center px-1", {
+        "flex-row-reverse": !isCurrentUser,
+      })}
+    >
+      <span className="text-sm">{message.receiverReaction}</span>
+      <div className="flex gap-x-1 items-center">
+        <div className="h-4 w-4 relative">
+          <Image
+            src={sessionImage || "/images/placeholder-user-3.png"}
+            referrerPolicy="no-referrer"
+            alt="Your profile picture"
+            className="rounded-full"
+            fill
+          />
+        </div>
+        <div className="h-4 w-4 relative">
+          <Image
+            src={chatPartnerImage || "/images/placeholder-user-3.png"}
+            referrerPolicy="no-referrer"
+            className="rounded-full"
+            alt="Partner's profile picture"
+            fill
+          />
+        </div>
       </div>
     </div>
   );

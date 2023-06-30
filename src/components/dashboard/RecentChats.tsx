@@ -44,7 +44,7 @@ const RecentChats: FC<RecentChatsProps> = ({
       </p>
       <div className="relative bg-white rounded-xl shadow-md flex flex-col max-h-[400px] overflow-y-auto scrollbar-thumb-blue-lighter scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
         {friendsWithLastMessage.length === 0 ? (
-          <p className="text-sm text-zinc-500">Nothing to show here...</p>
+          <p className="text-sm text-zinc-500 p-3">Nothing to show here...</p>
         ) : (
           friendsWithLastMessage.map((friend) => {
             const messageDetails = messageContent(friend.lastMessage);
@@ -57,7 +57,7 @@ const RecentChats: FC<RecentChatsProps> = ({
 
             if (!messageDetails)
               return (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-zinc-500 p-3">
                   Your recent chats will show up here...
                 </p>
               );
