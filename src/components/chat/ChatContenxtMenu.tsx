@@ -8,7 +8,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/ui/ContextMenu";
-import { Copy, Reply, Star, Trash2 } from "lucide-react";
+import { Copy, Reply } from "lucide-react";
 import { ReactionType, emogiType } from "@/types/typing";
 
 const reactionList: ReactionType[] = [
@@ -63,19 +63,6 @@ const ChatContenxtMenu: FC<ChatContenxtMenuProps> = ({
           Copy
           <ContextMenuShortcut>
             <Copy className="h-4 w-4 text-zinc-700" />
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem inset>
-          Star
-          <ContextMenuShortcut>
-            <Star className="h-4 w-4 text-zinc-700" />
-          </ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuItem inset>
-          Delete
-          <ContextMenuShortcut>
-            <Trash2 className="h-4 w-4 text-zinc-700" />
           </ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuSeparator />
