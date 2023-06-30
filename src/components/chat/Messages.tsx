@@ -201,6 +201,7 @@ const Messages: FC<MessagesProps> = ({
                   <ChatContenxtMenu
                     messageId={message.id}
                     replyToMessage={replyToMessage}
+                    copyMessage={copyToClipboard}
                   >
                     {message.replyTo && (
                       <ReplyMessage
