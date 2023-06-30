@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import Button from "@/ui/Button";
 import { Github, Google, Icons } from "@/components/Icons";
 import { toast } from "@/hooks/use-toast";
+import Image from "next/image";
 
 type Provider = "google" | "github";
 
@@ -28,10 +29,15 @@ const Page = () => {
   };
 
   return (
-    <>
-      <div className="flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen lg:flex">
+      <div className="hidden lg:block w-1/2">
+        <div className="relative h-full w-full">
+          <Image src="/images/login-banner.jpg" fill alt="login-banner" />
+        </div>
+      </div>
+      <div className="flex items-center min-h-screen justify-center py-12 px-4 sm:px-6 lg:px-8 lg:w-1/2">
         <div className="w-full flex flex-col items-center max-w-md space-y-8">
-          <div className="flex items-center gap-x-4">
+          <div className="flex flex-col justify-center items-center gap-x-4">
             <Icons.Logo className="h-8 w-auto text-indigo-600" />
             <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
               Sign in to your account
@@ -58,7 +64,7 @@ const Page = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
