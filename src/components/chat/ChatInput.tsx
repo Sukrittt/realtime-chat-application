@@ -83,7 +83,7 @@ const ChatInput: FC<ChatInputProps> = ({ chatPartner, chatId, sessionId }) => {
 
   return (
     <div className="border-t border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
-      {replyTo && <ReplyTo replyTo={replyTo} />}
+      {replyTo && <ReplyTo sessionId={sessionId} replyTo={replyTo} />}
       <div className="relative flex-1 overflow-hidden rounded-lg shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-indigo-600 pr-1 pt-1">
         <TextareaAutosize
           ref={textAreaRef}
@@ -136,21 +136,27 @@ export default ChatInput;
 
 interface ReplyToProps {
   replyTo: MessageType;
+  sessionId: string;
 }
 
-const ReplyTo: FC<ReplyToProps> = ({ replyTo }) => {
+const ReplyTo: FC<ReplyToProps> = ({ replyTo, sessionId }) => {
   const { reset } = useMessageModal();
 
   const trimmedMessage = trimMessage(replyTo.text, 100);
 
   return (
-    <div className="rounded-md border-l-4 mb-1 bg-zinc-300 border-indigo-600 p-2 flex items-center justify-between">
-      <span className="text-zinc-500 text-sm">{trimmedMessage}</span>
+    <div className="rounded-md border-l-4 mb-1 bg-zinc-300 border-indigo-600 px-2 py-3 flex items-center justify-between">
+      <div className="flex flex-col">
+        {replyTo.senderId === sessionId && (
+          <span className="text-indigo-600 font-semibold text-xs">You</span>
+        )}
+        <span className="text-zinc-500 text-sm">{trimmedMessage}</span>
+      </div>
       <div
         onClick={() => reset()}
         className="cursor-pointer focus:outline-none focus-ring-2 focus:ring-offset-2 focus:ring-slate-400"
       >
-        <X className="h-4 w-4 text-zinc-700" />
+        <X className="h-5 w-5 mr-2 text-zinc-700" />
       </div>
     </div>
   );

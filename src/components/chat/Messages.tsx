@@ -1,13 +1,17 @@
 "use client";
 import { FC, Fragment, useEffect, useRef, useState } from "react";
 import { format, isSameDay, isSameWeek, isSameYear, subDays } from "date-fns";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import axios from "axios";
 
 import { MessageType } from "@/lib/validators/message";
 import { cn, toPusherKey, trimMessage } from "@/lib/utils";
 import { pusherClient } from "@/lib/pusher";
 import ChatContenxtMenu from "@/components/chat/ChatContenxtMenu";
 import useMessageModal from "@/hooks/useMessage";
+import { IdRequestType } from "@/lib/validators/add-friend";
+import { toast } from "@/hooks/use-toast";
 
 interface MessagesProps {
   initialMessages: MessageType[];
@@ -26,6 +30,8 @@ const Messages: FC<MessagesProps> = ({
 }) => {
   const scrolldownRef = useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = useState<MessageType[]>(initialMessages);
+  const [seen, setSeen] = useState<boolean>(false);
+  const router = useRouter();
 
   const { setReplyTo } = useMessageModal();
 
@@ -43,6 +49,62 @@ const Messages: FC<MessagesProps> = ({
       pusherClient.unbind("incoming-message", triggerFunction);
     };
   }, [chatId]);
+
+  useEffect(() => {
+    setSeen(false);
+
+    pusherClient.subscribe(toPusherKey(`chat:seen:${sessionId}`));
+
+    const triggerFunction = () => {
+      setSeen(true);
+    };
+
+    pusherClient.bind("seen-message", triggerFunction);
+
+    if (messages.length === 0) return;
+
+    if (messages[0].senderId === sessionId) return;
+
+    const sendSeenEventCall = async () => {
+      try {
+        const payload: IdRequestType = { senderId: chatPartner.id };
+
+        await axios.post("/api/message/seen", payload);
+      } catch (error) {
+        toast({
+          title: "Something went wrong",
+          description: "Please refresh the page and try again.",
+          variant: "destructive",
+        });
+        router.refresh();
+      }
+    };
+
+    sendSeenEventCall();
+
+    return () => {
+      pusherClient.unsubscribe(toPusherKey(`chat:seen:${sessionId}`));
+      pusherClient.unbind("seen-message", triggerFunction);
+    };
+  }, [chatPartner.id, messages, router, sessionId]);
+
+  const copyToClipboard = async (messageId: string) => {
+    try {
+      const message = messages.find((message) => message.id === messageId);
+      if (!message) return;
+
+      await navigator.clipboard.writeText(message.text);
+      toast({
+        description: "Copied to clipboard",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
 
   const formatTimeStamp = (timestamp: number) => {
     return format(timestamp, "HH:mm");
@@ -117,6 +179,8 @@ const Messages: FC<MessagesProps> = ({
             messages[index + 1].timestamp
           );
 
+        const showSeen = seen && index === 0;
+
         return (
           <Fragment key={`${message.id}-${message.timestamp}`}>
             <div id="chat-message">
@@ -187,6 +251,11 @@ const Messages: FC<MessagesProps> = ({
                   />
                 </div>
               </div>
+              {showSeen && index == 0 && (
+                <span className="text-zinc-500 text-xs flex justify-end font-medium mx-10 mt-1">
+                  Seen
+                </span>
+              )}
             </div>
             {displayTimeStamp && (
               <p className="text-center text-zinc-500 text-xs font-semibold my-5">
