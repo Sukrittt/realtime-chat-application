@@ -41,7 +41,7 @@ const page = async () => {
   );
 
   return (
-    <div className="container py-12 grid grid-cols-1 md:grid-cols-3 gap-2">
+    <div className="px-4 md:container py-12 grid grid-cols-1 md:grid-cols-3 gap-x-2 gap-y-4">
       <RecentChats
         session={session}
         friendsWithLastMessage={friendsWithLastMessage}

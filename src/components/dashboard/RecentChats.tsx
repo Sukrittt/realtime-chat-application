@@ -38,11 +38,11 @@ const RecentChats: FC<RecentChatsProps> = ({
   };
 
   return (
-    <div className="col-span-2 h-[calc(100vh-120px)]">
+    <div className="col-span-2 max-h-[calc(100vh-130px)]">
       <p className="text-zinc-700 mb-2 font-semibold text-sm">
         Your recent chats
       </p>
-      <div className="relative bg-white rounded-xl shadow-md flex flex-col max-h-full overflow-y-auto scrollbar-thumb-blue-lighter scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
+      <div className="relative bg-white rounded-xl shadow-md max-h-[92%] md:max-h-full flex flex-col overflow-y-auto scrollbar-thumb-blue-lighter scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
         {friendsWithLastMessage.length === 0 ? (
           <p className="text-sm text-zinc-500 p-3">Nothing to show here...</p>
         ) : (
