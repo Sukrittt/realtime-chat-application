@@ -8,7 +8,7 @@ interface FriendsProps {
 
 const Friends: FC<FriendsProps> = ({ friends }) => {
   return (
-    <div>
+    <div className="h-[calc(100vh-120px)]">
       <p className="text-zinc-700 mb-2 font-semibold text-sm">Your friends</p>
       <div className="flex flex-col gap-y-4 bg-white rounded-xl shadow-md p-3 max-h-[400px] overflow-y-auto scrollbar-thumb-blue-lighter scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
         {friends.length === 0 ? (
